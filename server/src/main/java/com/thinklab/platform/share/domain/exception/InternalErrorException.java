@@ -1,6 +1,6 @@
 package com.thinklab.platform.share.domain.exception;
 
-public class InternalErrorException {
+public class InternalErrorException extends Exception {
     public final String code = "INTERNAL_ERROR";
     public final String message ;
 
