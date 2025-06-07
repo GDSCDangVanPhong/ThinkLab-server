@@ -11,7 +11,9 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository {
-    public Result<UsersEntity, ValidateException> saveUser(UserRequest request);
+
+    public Result<UserRequest, ValidateException> saveUser(UserRequest request);
     public Result<UsersEntity, NotFoundException> findUserByEmail(String email);
     public Result<UsersEntity, NotFoundException> deleteUser(UUID userID);
+
 }

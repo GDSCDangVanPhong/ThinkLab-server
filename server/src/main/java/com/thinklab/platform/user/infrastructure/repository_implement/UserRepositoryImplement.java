@@ -8,6 +8,7 @@ import com.thinklab.platform.share.domain.service.EncryptionService;
 import com.thinklab.platform.user.domain.model.UserRequest;
 import com.thinklab.platform.user.domain.repository_interface.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Repository
 @AllArgsConstructor
+@Data
 public class UserRepositoryImplement implements UserRepository {
 
     @Autowired
@@ -29,11 +31,11 @@ public class UserRepositoryImplement implements UserRepository {
     private final EncryptionService encryptionService;
 
     @SneakyThrows
-    public Result<UsersEntity, ValidateException> saveUser(UserRequest request) {
+    public Result<UserRequest, ValidateException> saveUser(UserRequest request) {
         try {
             if (request.validateResult().isSuccess()) {
                 request.setPassword(encryptionService.encrypt(request.getPassword()).getSuccessData());
-                UsersEntity user = mongo.save(request);
+                UserRequest user = mongo.save(request);
                 return Result.success(user);
             } else {
                 return Result.failed(request.validateResult().getFailedData());
