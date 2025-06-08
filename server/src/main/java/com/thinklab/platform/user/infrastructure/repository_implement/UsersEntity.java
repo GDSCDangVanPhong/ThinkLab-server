@@ -1,6 +1,6 @@
 package com.thinklab.platform.user.infrastructure.repository_implement;
 
-import com.thinklab.platform.user.domain.model.AccountProvider;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,5 +23,5 @@ public class UsersEntity {
     private String username;
     private String hashedPassword;
     private LocalDateTime createdAt;
-    private AccountProvider provider;
+
 }

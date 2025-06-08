@@ -1,12 +1,11 @@
     package com.thinklab.platform.user.domain.model;
 
+    import com.thinklab.platform.authen.domain.model.AccountProvider;
     import com.thinklab.platform.share.domain.exception.InternalErrorException;
     import com.thinklab.platform.share.domain.exception.ValidateException;
     import com.thinklab.platform.share.domain.model.Result;
-    import com.thinklab.platform.user.infrastructure.repository_implement.UsersEntity;
     import lombok.AllArgsConstructor;
     import lombok.Data;
-    import lombok.Getter;
     import lombok.SneakyThrows;
 
     import java.time.LocalDateTime;
