@@ -9,6 +9,7 @@ import com.thinklab.platform.share.domain.model.Result;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -25,16 +26,18 @@ public class AccountRepositoryImp implements AccountRepositoryInterface {
     private final MongoTemplate mongo;
 
     @SneakyThrows
-    public Result<CreateAccountRequest, InputsInvalidateException> saveAccount(CreateAccountRequest request){
+    public Result<AccountEntity, InputsInvalidateException> saveAccount(CreateAccountRequest request, String hashedPass){
         try{
-            Result<Boolean, InputsInvalidateException> validateInput = request.validateRequest();
-            if(validateInput.isSuccess()){
-                CreateAccountRequest save = mongo.save(request);
-                return Result.success(save);
+            Result<AccountEntity,InputsInvalidateException> account = AccountEntity.convert(request,hashedPass);
+            AccountEntity result = mongo.save(account.getSuccessData());
+            if(!account.isSuccess()){
+                return Result.failed(account.getFailedData());
             }
-            else {
-                return Result.failed(validateInput.getFailedData());
-            }
+            return Result.success(result);
+        }
+
+        catch (DuplicateKeyException e){
+            return Result.failed(new InputsInvalidateException("This Email Has Been Registered!"));
         }
         catch (Exception e){
             throw new InternalErrorException(e.getMessage());

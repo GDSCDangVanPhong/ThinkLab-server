@@ -1,6 +1,9 @@
 package com.thinklab.platform.share.domain.exception;
 
-public class InternalErrorException extends Exception {
+import lombok.Getter;
+
+@Getter
+public class InternalErrorException extends RuntimeException {
     public final String code = "INTERNAL_ERROR";
     public final String message ;
 

@@ -1,6 +1,9 @@
 package com.thinklab.platform.share.domain.exception;
 
-public class ValidateException extends Exception{
+import lombok.Data;
+
+@Data
+public class ValidateException extends RuntimeException{
 
     public final String message;
     public final String code  ="VALIDATE_FAILED";

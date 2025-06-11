@@ -34,7 +34,7 @@ public class UserRepositoryImplement implements UserRepository {
     public Result<UserRequest, ValidateException> saveUser(UserRequest request) {
         try {
             if (request.validateResult().isSuccess()) {
-                request.setPassword(encryptionService.encrypt(request.getPassword()).getSuccessData());
+                request.setPassword(encryptionService.encrypt(request.getPassword()));
                 UserRequest user = mongo.save(request);
                 return Result.success(user);
             } else {

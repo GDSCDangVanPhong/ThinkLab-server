@@ -1,6 +1,9 @@
 package com.thinklab.platform.share.domain.exception;
 
-public class NotFoundException extends Exception{
+import lombok.Data;
+
+@Data
+public class NotFoundException extends RuntimeException{
 
     public final String message;
     public final String code  ="NOT_FOUND";

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface AccountRepositoryInterface {
-    Result<CreateAccountRequest, InputsInvalidateException> saveAccount(CreateAccountRequest request);
+    public Result<AccountEntity, InputsInvalidateException> saveAccount(CreateAccountRequest request, String hashedPass);
 
     Result<AccountEntity, NotFoundException> getAccountByEmail(String email);
 

@@ -1,0 +1,18 @@
+input LoginInput {
+    email : String!
+    rawPassword : String!
+}
+
+enum AccountProvider {
+    SYSTEM,
+    GOOGLE,
+    GITHUB
+}
+
+
+input SignUpInput {
+    email : String!
+    password : String!
+    username : String!
+    provider : AccountProvider
+}

@@ -3,12 +3,12 @@ package com.thinklab.platform.share.domain.exception;
 import lombok.Data;
 
 @Data
-public class InputsInvalidateException extends Exception{
+public class InputsInvalidateException extends RuntimeException{
     private final String code =  "INVALID_INPUT";
-    private String msg ;
+    private String message ;
 
     public InputsInvalidateException(String message){
-        this.msg = message;
+        this.message = message;
     }
 
 }

@@ -1,0 +1,7 @@
+type Mutation {
+    login(input: LoginInput!): String
+    signUp(input : SignUpInput!) : String
+
+
+}
+

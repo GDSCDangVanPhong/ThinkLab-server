@@ -39,9 +39,9 @@ public class AuthenticationService {
                         account.getSuccessData().getHashedPassword(),
                         "Wrong Password!");
                 if (result.isSuccess()) {
-                    Result<String, InternalErrorException> response = jwtService.
-                            generateToken(account.getSuccessData().getAccountID());
-                    return Result.success(response.getSuccessData());
+                    return Result.success(jwtService.generateToken(account
+                            .getSuccessData()
+                            .getAccountID()));
                 } else {
                     throw result.getFailedData();
                 }
@@ -54,13 +54,19 @@ public class AuthenticationService {
     }
 
     @SneakyThrows
-    public Result<String , ValidateException> signUp(CreateAccountRequest request){
+    public Result<String , InputsInvalidateException> signUp(CreateAccountRequest request){
         try{
-            Result<CreateAccountRequest, InputsInvalidateException> result = accountRepo.saveAccount(request);
-            if (result.isSuccess()){
-                Result<String, InternalErrorException> token = jwtService.generateToken(request)
-                return Result.success()
+            String hashedPassword = encryptionService.encrypt(request.getPassword());
+            Result<AccountEntity, InputsInvalidateException> result = accountRepo.saveAccount(request,hashedPassword);
+            if (result.isSuccess()) {
+                return Result.success(jwtService.generateToken(result
+                        .getSuccessData()
+                        .getAccountID()));
             }
+            return Result.failed(result.getFailedData());
+        }
+        catch (Exception e){
+            throw new InternalErrorException(e.getMessage());
         }
     }
 

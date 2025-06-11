@@ -4,6 +4,8 @@ import com.thinklab.platform.share.domain.exception.InternalErrorException;
 import com.thinklab.platform.share.domain.exception.ValidateException;
 import com.thinklab.platform.share.domain.model.Result;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -28,17 +32,28 @@ public class JwtService {
 
     @PostConstruct
     public void init() {
-        if (secretKey == null) {
-            throw new IllegalStateException("ENCRYPTION_KEY is not configured");
+        if (secretKey == null || secretKey.trim().isEmpty()) {
+            // Generate a secure random key if none is provided
+            byte[] keyBytes = new byte[32]; // 256-bit key for HS256
+            new SecureRandom().nextBytes(keyBytes);
+            this.key = Keys.hmacShaKeyFor(keyBytes);
+            // Optionally, encode and log the key for configuration (in a secure environment)
+            this.secretKey = Base64.getEncoder().encodeToString(keyBytes);
+        } else {
+            // Use the provided key, ensuring it's decoded correctly
+            byte[] keyBytes = Base64.getDecoder().decode(secretKey);
+            if (keyBytes.length < 32) {
+                throw new IllegalStateException("ENCRYPTION_KEY must be at least 256 bits (32 bytes) after Base64 decoding");
+            }
+            this.key = Keys.hmacShaKeyFor(keyBytes);
         }
-        this.key = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
     }
 
 
     @SneakyThrows
-    public Result<String, InternalErrorException> generateToken(UUID userID) {
+    public String generateToken(UUID userID) {
         try {
-            return Result.success(
+            return
                     Jwts.builder()
                             .subject("sessionID")
                             .claim("sessionID", userID)
@@ -46,7 +61,7 @@ public class JwtService {
                             .expiration(new Date(System.currentTimeMillis() + expireDate))
                             .signWith(key)
                             .compact()
-            );
+            ;
         } catch (Exception e) {
             throw new InternalErrorException(e.getMessage());
         }
