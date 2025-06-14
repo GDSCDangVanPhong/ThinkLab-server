@@ -13,7 +13,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Cho phép tất cả các endpoint
-                        .allowedOrigins("http://localhost:3000", "https://thinklab-pi.vercel.app") // địa chỉ frontend
+                        .allowedOrigins("http://localhost:3000", "https://thinklab-pi.vercel.app", "http://localhost:8000") // địa chỉ frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true); // Cho phép gửi cookie/session nếu có
