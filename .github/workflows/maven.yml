@@ -12,6 +12,10 @@ jobs:
     defaults:
       run:
         working-directory: server
+    env:
+      # Biến môi trường MongoDB (lấy từ GitHub Secrets)
+      SPRING_DATA_MONGODB_URI: ${{ secrets.SPRING_DATA_MONGODB_URI }}
+      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
     steps:
       - uses: actions/checkout@v4
