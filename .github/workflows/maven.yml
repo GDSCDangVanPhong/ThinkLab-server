@@ -59,18 +59,25 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
-        
+
           echo "Uploading JAR..."
           scp $JAR_NAME $EC2_USER@$EC2_HOST:/home/$EC2_USER/$JAR_NAME
-        
+
           echo "Deploying on EC2..."
-          ssh $EC2_USER@$EC2_HOST << 'EOF'
-           echo "Moving JAR to /opt/my spring-app..."
-            sudo mv /home/$EC2_USER/$JAR_NAME /opt/my spring-app/$JAR_NAME
-            sudo chown $EC2_USER:$EC2_USER /opt/my spring-app/$JAR_NAME
-        
+          ssh $EC2_USER@$EC2_HOST <<EOF
+          set -e
+
+          echo "Creating app directory if not exists..."
+          sudo mkdir -p "/opt/my-spring-app"
+          sudo chown $EC2_USER:$EC2_USER "/opt/my-spring-app"
+
+          echo "Moving JAR to /opt/my-spring-app..."
+          sudo mv "/home/$EC2_USER/$JAR_NAME" "/opt/my-spring-app/$JAR_NAME"
+          sudo chown $EC2_USER:$EC2_USER "/opt/my-spring-app/$JAR_NAME"
+
           echo "Restarting app..."
           sudo systemctl stop my-spring-app.service || true
           sudo systemctl start my-spring-app.service
           sudo systemctl status my-spring-app.service
           EOF
+
