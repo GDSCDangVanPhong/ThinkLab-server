@@ -11,10 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: server # chạy trong thư mục `server`
+        working-directory: server
+
+    env:
+      # Biến môi trường MongoDB (lấy từ GitHub Secrets)
+      SPRING_DATA_MONGODB_URI: ${{ secrets.SPRING_DATA_MONGODB_URI }}
+      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
       - name: Set up JDK 24
         uses: actions/setup-java@v4
@@ -57,7 +63,7 @@ jobs:
           ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
           scp $JAR_NAME $EC2_USER@$EC2_HOST:/home/$EC2_USER/$JAR_NAME
 
-          ssh $EC2_USER@$EC2_HOST "
+          ssh $EC2_USER@$EC2_HOST << EOF
             echo 'Stopping app...'
             sudo systemctl stop my-spring-app || true
 
@@ -67,4 +73,4 @@ jobs:
             echo 'Starting app...'
             sudo systemctl start my-spring-app
             sudo systemctl status my-spring-app --no-pager
-          "
+          EOF
