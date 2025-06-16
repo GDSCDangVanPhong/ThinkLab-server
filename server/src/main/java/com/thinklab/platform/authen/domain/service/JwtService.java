@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.SneakyThrows;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +52,7 @@ public class JwtService {
 
 
     @SneakyThrows
-    public String generateToken(UUID userID) {
+    public String generateToken(ObjectId userID) {
         try {
             return
                     Jwts.builder()

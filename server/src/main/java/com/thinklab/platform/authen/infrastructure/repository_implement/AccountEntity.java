@@ -9,10 +9,12 @@ import com.thinklab.platform.share.domain.model.Result;
 import lombok.Builder;
 import lombok.Data;
 import lombok.SneakyThrows;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
 import java.util.UUID;
 
 @Document(collection = "account")
@@ -21,15 +23,16 @@ import java.util.UUID;
 public class AccountEntity {
 
     @Id
-    private UUID accountID;
+    private ObjectId accountID;
     @Indexed(unique = true)
     private final String email;
     private String username;
     private final String hashedPassword;
     private String resetPasswordToken;
+    private List<String> authorizedIP;
     private String mfaSecret;
     private boolean mfaEnabled;
-    private boolean verified;
+
     private AccountProvider provider;
 
     @SneakyThrows
@@ -41,7 +44,6 @@ public class AccountEntity {
             }
             return Result.success(
                     AccountEntity.builder()
-                            .accountID(UUID.randomUUID())
                             .email(request.getEmail())
                             .username(request.getUsername())
                             .hashedPassword(hashedPassword)
