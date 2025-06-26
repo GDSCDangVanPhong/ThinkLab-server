@@ -12,6 +12,8 @@ public class CreateAccountRequest {
     private String password;
     private String username;
     private AccountProvider provider;
+    private String device;
+    private String ip;
 
     @SneakyThrows
     public Result<Boolean, InputsInvalidateException> validateRequest(){

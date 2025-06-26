@@ -17,6 +17,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
@@ -25,7 +26,7 @@ import java.util.UUID;
 @Data
 public class JwtService {
 
-    private final long expireDate = 60 * 1000 * 24 * 7;
+    private final long expireDate = 60 * 1000 * 24 ;
 
     @Value("${ENCRYPTION_KEY}")
     private String secretKey;
@@ -34,14 +35,11 @@ public class JwtService {
     @PostConstruct
     public void init() {
         if (secretKey == null || secretKey.trim().isEmpty()) {
-            // Generate a secure random key if none is provided
-            byte[] keyBytes = new byte[32]; // 256-bit key for HS256
+            byte[] keyBytes = new byte[32];
             new SecureRandom().nextBytes(keyBytes);
             this.key = Keys.hmacShaKeyFor(keyBytes);
-            // Optionally, encode and log the key for configuration (in a secure environment)
             this.secretKey = Base64.getEncoder().encodeToString(keyBytes);
         } else {
-            // Use the provided key, ensuring it's decoded correctly
             byte[] keyBytes = Base64.getDecoder().decode(secretKey);
             if (keyBytes.length < 32) {
                 throw new IllegalStateException("ENCRYPTION_KEY must be at least 256 bits (32 bytes) after Base64 decoding");
@@ -51,15 +49,17 @@ public class JwtService {
     }
 
 
-    @SneakyThrows
-    public String generateToken(ObjectId userID) {
+
+    public String generateToken(ObjectId userID, Duration ttl) {
         try {
+            long now = System.currentTimeMillis();
+            long expirationMillis = ttl.toMillis();
             return
                     Jwts.builder()
                             .subject("sessionID")
-                            .claim("sessionID", userID)
-                            .issuedAt(new Date(System.currentTimeMillis()))
-                            .expiration(new Date(System.currentTimeMillis() + expireDate))
+                            .claim("sessionID", userID.toString())
+                            .issuedAt(new Date(now))
+                            .expiration(new Date(now + expirationMillis))
                             .signWith(key)
                             .compact()
             ;

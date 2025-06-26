@@ -3,11 +3,14 @@ package com.thinklab.platform.authen.infrastructure.api;
 import com.thinklab.platform.authen.domain.model.CreateAccountRequest;
 import com.thinklab.platform.authen.domain.model.LoginRequest;
 import com.thinklab.platform.authen.domain.service.AuthenticationService;
+import com.thinklab.platform.authen.domain.service.HeaderUtils;
 import com.thinklab.platform.share.domain.exception.InputsInvalidateException;
 import com.thinklab.platform.share.domain.exception.InternalErrorException;
 import com.thinklab.platform.share.domain.exception.NotFoundException;
 import com.thinklab.platform.share.domain.exception.ValidateException;
 import com.thinklab.platform.share.domain.model.Result;
+import graphql.schema.DataFetchingEnvironment;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +25,18 @@ public class AccountResolver {
     @Autowired
     private final AuthenticationService service;
 
+    @Autowired
+    private final HeaderUtils utils;
+
+    @Autowired
+    private final HttpServletRequest servletRequest;
     @MutationMapping
     public String login(@Argument("input") LoginRequest request){
         try{
+
+            HeaderUtils.DeviceInfo deviceInfo = HeaderUtils.extractDeviceInfo(servletRequest);
+            request.setIp(deviceInfo.ip());
+            request.setDevice(deviceInfo.userAgent());
             Result<String, NotFoundException> login = service.login(request);
             if(login.isSuccess()){
                 return login.getSuccessData();
@@ -56,5 +68,14 @@ public class AccountResolver {
         catch (Exception e){
             throw new InternalErrorException(e.getMessage());
         }
+    }
+
+
+    private String extractClientIp(HttpServletRequest request) {
+        String header = request.getHeader("X-Forwarded-For");
+        if (header != null && !header.isEmpty()) {
+            return header.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

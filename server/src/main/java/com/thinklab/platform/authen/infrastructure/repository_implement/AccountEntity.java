@@ -14,6 +14,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,6 +49,7 @@ public class AccountEntity {
                             .username(request.getUsername())
                             .hashedPassword(hashedPassword)
                             .resetPasswordToken(null)
+                            .authorizedIP(new ArrayList<>())
                             .mfaSecret(null)
                             .mfaEnabled(false)
                             .provider(request.getProvider())

@@ -10,6 +10,10 @@ import com.thinklab.platform.share.domain.exception.NotFoundException;
 import com.thinklab.platform.share.domain.exception.ValidateException;
 import com.thinklab.platform.share.domain.model.Result;
 import com.thinklab.platform.share.domain.service.EncryptionService;
+import com.thinklab.platform.user.domain.repository_interface.UserRepository;
+import com.thinklab.platform.user.infrastructure.repository_implement.UsersEntity;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,13 @@ public class AuthenticationService {
     private final EncryptionService encryptionService;
 
     @Autowired
-    private final JwtService jwtService;
+    private final SessionService session;
+
+    @Autowired
+    private final UserRepository userRepo;
+
+    @Autowired
+    private final HttpServletResponse response;
 
     @SneakyThrows
     public Result<String, NotFoundException> login(LoginRequest request) {
@@ -39,9 +49,17 @@ public class AuthenticationService {
                         account.getSuccessData().getHashedPassword(),
                         "Wrong Password!");
                 if (result.isSuccess()) {
-                    return Result.success(jwtService.generateToken(account
-                            .getSuccessData()
-                            .getAccountID()));
+                    Cookie cookie = new Cookie("sessionId",account.getSuccessData().getAccountID().toString());
+                    cookie.setHttpOnly(true);
+                    cookie.setSecure(true);
+                    cookie.setMaxAge(7 * 24 * 60 * 60);
+                    response.addCookie(cookie);
+                    return  Result.success(
+                            session.createSession(account.getSuccessData().getAccountID(),
+                                    request.getIp(),
+                                    request.getDevice())
+                    );
+
                 } else {
                     throw result.getFailedData();
                 }
@@ -57,13 +75,33 @@ public class AuthenticationService {
     public Result<String , InputsInvalidateException> signUp(CreateAccountRequest request){
         try{
             String hashedPassword = encryptionService.encrypt(request.getPassword());
-            Result<AccountEntity, InputsInvalidateException> result = accountRepo.saveAccount(request,hashedPassword);
-            if (result.isSuccess()) {
-                return Result.success(jwtService.generateToken(result
-                        .getSuccessData()
-                        .getAccountID()));
+            Result<AccountEntity, InputsInvalidateException> result1= accountRepo
+                    .saveAccount(request,hashedPassword);
+            if (!result1.isSuccess()) {
+                return Result.failed(result1.getFailedData());
             }
-            return Result.failed(result.getFailedData());
+            Result<UsersEntity, ValidateException> result2 = userRepo
+                    .saveUser(result1.getSuccessData());
+            if(!result2.isSuccess()){
+                return Result.failed(new InputsInvalidateException(
+                        "User Profile Creation Failed:" +
+                                result2.getFailedData().getMessage()
+                ));
+            }
+            Cookie cookie = new Cookie("sessionId", result2.getSuccessData().getId().toString());
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setMaxAge(7 * 24 * 60 * 60);
+            response.addCookie(cookie);
+            return Result.success(
+                    session.createSession(
+                            result2.getSuccessData().getId(),
+                            request.getIp(),
+                            request.getDevice()
+
+                    )
+            );
+
         }
         catch (Exception e){
             throw new InternalErrorException(e.getMessage());

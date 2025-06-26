@@ -1,6 +1,7 @@
 input LoginInput {
     email : String!
     rawPassword : String!
+
 }
 
 enum AccountProvider {
